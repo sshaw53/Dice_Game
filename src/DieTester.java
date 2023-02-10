@@ -1,15 +1,28 @@
 import java.util.Scanner;
+//import java.util.ArrayList;
 
+// find somewhere to do window.repaint()
 public class DieTester {
 
     /** INSTANCE VARIABLES **/
-    private int[] computersDice;
-    private int[] playersDice;
+    private Die[] computersDice;
+    private Die[] playersDice;
+    private DieViewer viewer;
+    private boolean isGameOver;
+    private boolean hasWon;
+    private boolean hasLost;
+    private boolean revealComp;
+
 
     /** CONSTRUCTOR **/
     public DieTester() {
         computersDice = rollDice();
         playersDice = rollDice();
+        isGameOver = false;
+        hasWon = false;
+        hasLost = false;
+        revealComp = false;
+        viewer = new DieViewer(this);
     }
 
     public static void main(String[] args) {
@@ -34,6 +47,7 @@ public class DieTester {
         // Rolls Player and Computer Dice
         playerRoll();
         computerRoll();
+        viewer.repaint();
 
         // Have player make their guess, check to make sure
         // value is between 1-6
@@ -56,8 +70,16 @@ public class DieTester {
         System.out.println();
         if (numberDice >= number) {
             System.out.println("Correct! There were at least " + number + " " + value + "s!");
+            revealComp = true;
+            isGameOver = true;
+            hasWon = true;
+            viewer.repaint();
         } else {
             System.out.println("Incorrect :( There were " + numberDice + " " + value + "s!");
+            revealComp = true;
+            isGameOver = true;
+            hasLost = true;
+            viewer.repaint();
         }
     }
 
@@ -66,15 +88,38 @@ public class DieTester {
      * Method that rolls 5 dice randomly and inputs it in
      * an array to return as their 5 rolls
      */
-    public static int[] rollDice() {
-        Die d1 = new Die(6);
-        int sides = d1.getSides() - 1;
-        int[] dice = new int[sides];
+    public Die[] getComputersDice() {
+        return computersDice;
+    }
 
-        for (int i = 0; i < sides; i++) {
-            dice[i] = d1.roll();
+    public Die[] getPlayersDice() {
+        return playersDice;
+    }
+
+    public boolean isRevealComp() {
+        return revealComp;
+    }
+    public boolean isGameOver() {
+        return isGameOver;
+    }
+
+    public boolean isHasWon() {
+        return hasWon;
+    }
+
+    public boolean isHasLost() {
+        return hasLost;
+    }
+
+    public Die[] rollDice() {
+        Die[] hand = new Die[5];
+
+        for (int i = 0; i < 5; i++) {
+            Die d = new Die(6);
+            d.roll();
+            hand[i] = d;
         }
-        return dice;
+        return hand;
     }
 
     /**
@@ -84,11 +129,9 @@ public class DieTester {
      */
     public void playerRoll() {
         System.out.println();
-        Die dPlayer = new Die(6);
-        System.out.println(dPlayer);
         System.out.print("Player's rolls: ");
         for (int i = 0; i < 5; i++) {
-            System.out.print(playersDice[i] + " ");
+            System.out.print(playersDice[i].getValue() + " ");
         }
         System.out.println();
         System.out.println();
@@ -99,8 +142,6 @@ public class DieTester {
      * the roll, then tell player next steps
      */
     public void computerRoll() {
-        Die dComputer = new Die(6);
-        System.out.println(dComputer);
         System.out.println("The computer has rolled." + "\n");
 
         // Have the player guess the max number of rolls
@@ -126,16 +167,18 @@ public class DieTester {
      * Method that checks both arrays to see how many times
      * that a specific value has popped up
      */
-    public static int countValue(int[] array1, int[] array2, int value) {
+    public static int countValue(Die[] array1, Die[] array2, int value) {
         int count = 0;
         for (int i = 0; i < 5; i++) {
-            if (array1[i] == value) {
+            if (array1[i].getValue() == value) {
+                array1[i].setIsChosenDie();
                 count++;
             }
         }
 
         for (int i = 0; i < 5; i++) {
-            if (array2[i] == value) {
+            if (array2[i].getValue() == value) {
+                array2[i].setIsChosenDie();
                 count++;
             }
         }
